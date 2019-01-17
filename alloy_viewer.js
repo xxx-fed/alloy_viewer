@@ -120,7 +120,7 @@ ImageView.prototype = {
             Transform(this.list);
             this.current && this.changeIndex(this.current, false);
             this.bindStyle(this.current);
-            this.opt.initCallback && initCallback();
+            this.opt.initCallback && this.opt.initCallback();
 
             this.isRendered = true;
         }
