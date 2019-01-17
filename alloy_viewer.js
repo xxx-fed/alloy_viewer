@@ -17,11 +17,16 @@
 var AlloyFinger = require('components/alloy_finger');
 var Transform = require('components/transform');
 
-const MARGIN = 30
+var MARGIN = 30
 
-class ImageView {
+function ImageView() {
+    this.initialize.apply(this, arguments);
+}
+
+
+ImageView.prototype = {
     
-    constructor(opt) {
+    initialize: function(opt) {
         this.opt = opt || {};
         this.imagelist = opt.imagelist;
         this.arrLength = opt.imagelist.length;
@@ -42,9 +47,9 @@ class ImageView {
         this.focused = null;
 
         this.initDOM();
-    }
-
-    initDOM() {
+    },
+    initDOM: function() {
+        var _this = this;
         this.dom = document.createDocumentFragment();
         this.list = document.createElement('ul');
         this.list.className = 'imagelist';
@@ -54,53 +59,53 @@ class ImageView {
             pressMove: this.onPressMove.bind(this),
             swipe: this.onSwipe.bind(this)
         });
-        this.imagelist.forEach((ele, i) => {
-            let li = document.createElement('li');
+        this.imagelist.forEach(function(ele, i){
+            var li = document.createElement('li');
             li.className = 'imagelist-item';
-            li.style.marginRight = this.gap + 'px';
-
-            let centerImg = document.createElement('img');
+            li.style.marginRight = _this.gap + 'px';
+            var centerImg = document.createElement('img');
             centerImg.id = `view${i}`;
             centerImg.className = 'imagelist-item-img';
             centerImg.src = ele;
-            centerImg.onload = this.onImgLoad.bind(this);
+            centerImg.onload = _this.onImgLoad.bind(_this);
 
             new AlloyFinger(centerImg, {
-                pressMove: this.onPicPressMove.bind(this),
-                multipointStart: this.onMultipointStart.bind(this),
-                longTap: this.onLongTap.bind(this),
-                pinch: this.onPinch.bind(this),
-                rotate: this.onRotate.bind(this),
-                multipointEnd: this.onMultipointEnd.bind(this),
-                doubleTap: this.onDoubleTap.bind(this)
+                pressMove: _this.onPicPressMove.bind(_this),
+                multipointStart: _this.onMultipointStart.bind(_this),
+                longTap: _this.onLongTap.bind(_this),
+                pinch: _this.onPinch.bind(_this),
+                rotate: _this.onRotate.bind(_this),
+                multipointEnd: _this.onMultipointEnd.bind(_this),
+                doubleTap: _this.onDoubleTap.bind(_this)
             });
 
             li.appendChild(centerImg);
 
-            this.list.appendChild(li);
+            _this.list.appendChild(li);
         });
         this.dom.appendChild(this.list);
 
         // page number
         if(!this.opt.disablePageNum) {
-            let pageNum = document.createElement('div');
+            var pageNum = document.createElement('div');
             pageNum.className = 'page';
             pageNum.id = 'pageNum';
             pageNum.innerHTML = `${this.current + 1} / ${this.arrLength}`;
             this.dom.appendChild(pageNum);
         }
-    }
+    },
     
-    onOrientationChange(){
+    onOrientationChange: function() {
         // 方向改变后新的innerHeight生效需要delay
-        setTimeout(()=>{
-            this.screenWidth = window.innerWidth || window.screen.availWidth;
-            this.screenHeight = window.innerHeight ||  window.screen.availHeight;
-            this.changeIndex(this.current)
+        var _this = this;
+        setTimeout(function(){
+            _this.screenWidth = window.innerWidth || window.screen.availWidth;
+            _this.screenHeight = window.innerHeight ||  window.screen.availHeight;
+            _this.changeIndex(_this.current)
         }, 100)
-    }
+    },
 
-    show() {
+    show: function() {
         if(this.isRendered){
             this.container.classList.remove('hide');
             this.container.style.display = 'block';
@@ -119,21 +124,22 @@ class ImageView {
 
             this.isRendered = true;
         }
-    }
+    },
 
-    hide() {
+    hide: function() {
+        var _this = this;
         this.container.classList.add('hide');
-        setTimeout(() => {
-            this.container.style.display = 'none';
+        setTimeout(function(){
+            _this.container.style.display = 'none';
         }, 500);
-    }
+    },
 
-    onSingleTap(){
+    onSingleTap: function() {
         this.opt.close && this.opt.close();
-    }
+    },
 
-    onPressMove(evt){
-        const { current } = this;
+    onPressMove: function(evt) {
+        var current = this.current
 
         this.endAnimation();
 
@@ -146,12 +152,12 @@ class ImageView {
         }
 
         evt.preventDefault();
-    }
+    },
 
-    onSwipe(evt){
-        const { direction } = evt;
+    onSwipe: function(evt) {
+        var direction = evt.direction
 
-        let c = this.current;
+        var c = this.current;
         if( this.focused ){
             return false;
         }
@@ -164,12 +170,14 @@ class ImageView {
                 break;
         }
         this.changeIndex(c)
-    }
+    },
 
-    onPicPressMove(evt) {
-        const { deltaX, deltaY } = evt,
+    onPicPressMove: function(evt) {
+        var deltaX = evt.deltaX,
+            deltaY = evt.deltaY,
             isLongPic = this.ob.getAttribute('long'),
-            { scaleX, width } = this.ob;
+            scaleX = this.ob.scaleX,
+            width = this.ob.width
 
         if(this.ob.scaleX <= 1 || evt.touches.length > 1){
             return;
@@ -188,19 +196,20 @@ class ImageView {
             this.focused = false;
         }
         // console.log('translate ',this.ob.translateX, this.ob.translateY);
-    }
+    },
 
-    onMultipointStart(){
+    onMultipointStart: function() {
         this.initScale = this.ob.scaleX;
-    }
+    },
 
-    onPinch(evt){
+    onPinch: function(evt) {
         if( this.opt.disablePinch || this.ob.getAttribute('long')){
             return false;
         }
         this.ob.style.webkitTransition = 'cubic-bezier(.25,.01,.25,1)'
 
-        const { originX, originY } = this.ob, 
+        var  originX = this.ob.originX,
+            originY = this.ob.originY,
             originX2 = evt.center.x - this.screenWidth/2 - document.body.scrollLeft,
             originY2 = evt.center.y - this.screenHeight/2 - document.body.scrollTop;
 
@@ -210,9 +219,9 @@ class ImageView {
         this.ob.translateY = this.ob.translateY + (originY2 - originY) * this.ob.scaleY;
 
         this.ob.scaleX = this.ob.scaleY = this.initScale * evt.scale;
-    }
+    },
 
-    onRotate(evt){
+    onRotate: function(evt) {
         if( !this.opt.enableRotate || this.ob.getAttribute('rate') >= 3.5){
             return false;
         }
@@ -220,13 +229,13 @@ class ImageView {
         this.ob.style.webkitTransition = 'cubic-bezier(.25,.01,.25,1)'
 
         this.ob.rotateZ += evt.angle;
-    }
+    },
 
-    onLongTap(){
+    onLongTap: function() {
         this.opt.longTap && this.opt.longTap();
-    }
+    },
 
-    onMultipointEnd(evt){
+    onMultipointEnd: function(evt) {
         // translate to normal
         this.changeIndex(this.current);
 
@@ -236,7 +245,7 @@ class ImageView {
 
         this.ob.style.webkitTransition = '300ms ease';
 
-        const { maxScale } = this,
+        var maxScale = this.maxScale,
             isLongPic = this.ob.getAttribute('long');
         // scale to normal
         if (this.ob.scaleX < 1) {
@@ -247,7 +256,7 @@ class ImageView {
         }
 
         // rotate to normal
-        let rotation = this.ob.rotateZ % 360,
+        var rotation = this.ob.rotateZ % 360,
             rate = this.ob.getAttribute('rate');
 
         if(rotation < 0){
@@ -268,14 +277,14 @@ class ImageView {
             this.ob.rotateZ = 270;
             this.setScale(rate);
         }
-    }
+    },
 
-    onDoubleTap(evt){
+    onDoubleTap: function(evt) {
         if( this.opt.disableDoubleTap ){
             return false;
         }
 
-        const { origin } = evt,
+        var origin = evt.origin,
             originX = origin[0] - this.screenWidth/2 - document.body.scrollLeft,
             originY = origin[1] - this.screenHeight/2 - document.body.scrollTop,
             isLongPic = this.ob.getAttribute('long');
@@ -291,60 +300,72 @@ class ImageView {
         }   
     
         // console.log('origin',this.ob.originX, this.ob.originY);
-    }
+    },
 
-    bindStyle(current) {
+    bindStyle: function(current) {
         this.current = current;
         this.ob && this.restore();
-        this.ob = document.getElementById(`view${current}`);
+        this.ob = document.getElementById('view'+ current);
         if(this.ob && !this.ob.scaleX){ 
             Transform(this.ob)
         }
         // ease hide page number
-        const page = document.getElementById('pageNum');
+        var page = document.getElementById('pageNum');
         if(page){
             page.classList.remove('hide');
-            setTimeout(()=>{
+            setTimeout(function(){
                 page.classList.add('hide');
             }, 2000);
         }
-    }
+    },
 
-    changeIndex(current, ease=true) {
+    changeIndex: function(current, ease) {
+        var ease = ease || true
         ease && (this.list.style.webkitTransition = '300ms ease');
         this.list.translateX = -current*(this.screenWidth + this.gap);
 
         this.opt.changeIndex && this.opt.changeIndex(current);
 
         // change page number
-        document.getElementById('pageNum').innerHTML = `${this.current + 1} / ${this.arrLength}`;
-    }
+        if (document.getElementById('pageNum')) {
+            document.getElementById('pageNum').innerHTML = (this.current + 1) + '/' + (this.arrLength);
+        }
+        
+    },
 
-    setScale(size) {
+    setScale: function(size) {
         this.ob.style.webkitTransition = '300ms ease-in-out';
         this.ob.scaleX = this.ob.scaleY = size;
-    }
+    },
 
-    restore(rotate=true) {
+    restore: function(rotate) {
+        var rotate = rotate || true;
         this.ob.translateX = this.ob.translateY = 0;
         !!rotate && (this.ob.rotateZ = 0);
         this.ob.scaleX = this.ob.scaleY = 1;
         this.ob.originX = this.ob.originY = 0;
-    }
+    },
 
-    endAnimation() {
+    endAnimation: function() {
         this.list.style.webkitTransition = '0';
         this.ob && this.ob.style && (this.ob.style.webkitTransition = '0');
-    }
-
-    checkBoundary(deltaX = 0, deltaY = 0) {
+    },
+    checkBoundary : function(deltaX, deltaY) {
+        var deltaX = deltaX || 0;
+        var deltaY = deltaY || 0
         // console.log(this.ob.width, this.ob.height);
-        const { scaleX, translateX, translateY, originX, originY, width, height } = this.ob,
+            var scaleX = this.ob.scaleX,
+            translateX = this.ob.translateX,
+            translateY = this.ob.translateY,
+            originX = this.ob.originX,
+            originY = this.ob.originY,
+            width = this.ob.width,
+            height = this.ob.height,
             rate = this.ob.getAttribute('rate');
 
         if(scaleX !== 1 || scaleX !== rate){
             // include long picture
-            const rangeLeft = (scaleX - 1) * (width / 2 + originX) + originX,
+            var rangeLeft = (scaleX - 1) * (width / 2 + originX) + originX,
                 rangeRight = -(scaleX - 1) * (width / 2 - originX) + originX,
                 rangeUp = (scaleX - 1) * (height / 2 + originY) + originY,
                 rangeDown = -(scaleX - 1) * (height / 2 - originY) + originY;
@@ -359,10 +380,10 @@ class ImageView {
             }
         }
         return false;
-    }
+    },
 
-    onImgLoad(e) {
-        const target = e.target,
+    onImgLoad: function(e) {
+        var target = e.target,
             h = target.naturalHeight,
             w = target.naturalWidth,
             r = h / w,
@@ -370,7 +391,7 @@ class ImageView {
             width = window.innerWidth || window.screen.availWidth,
             rate = height / width;
 
-        let imgStyle = {};
+        var imgStyle = {};
 
         if(r >= 3.5){
             target.setAttribute('long', true);
