@@ -2,5 +2,9 @@
     "repos": "https://github.com/huya-fed/alloy_viewer.git",
     "version": "v1.0.0",
     "name": "alloy_viewer",
-    "main": "alloy_viewer.js"
+    "main": "alloy_viewer.js",
+    "dependencies": [
+        "huya-fed/alloy_finger",
+        "huya-fed/transform"
+    ]
 }
