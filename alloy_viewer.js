@@ -64,7 +64,7 @@ ImageView.prototype = {
             li.className = 'imagelist-item';
             li.style.marginRight = _this.gap + 'px';
             var centerImg = document.createElement('img');
-            centerImg.id = `view${i}`;
+            centerImg.id = 'view' + i;
             centerImg.className = 'imagelist-item-img';
             centerImg.src = ele;
             centerImg.onload = _this.onImgLoad.bind(_this);
@@ -90,7 +90,7 @@ ImageView.prototype = {
             var pageNum = document.createElement('div');
             pageNum.className = 'page';
             pageNum.id = 'pageNum';
-            pageNum.innerHTML = `${this.current + 1} / ${this.arrLength}`;
+            pageNum.innerHTML = (this.current + 1) +  '/' + this.arrLength;
             this.dom.appendChild(pageNum);
         }
     },
@@ -410,7 +410,7 @@ ImageView.prototype = {
             imgStyle.height = height;
         }
 
-        target.setAttribute('style', `width:${imgStyle.width}; height:${imgStyle.height}; left:${imgStyle.left}; top:${imgStyle.top};`);
+        target.setAttribute('style', 'width:' + imgStyle.width +'; height:' + imgStyle.height+ '; left:'+ imgStyle.left + '; top:' +imgStyle.top + ';');
         target.setAttribute('rate', 1/r);
     }
 }
